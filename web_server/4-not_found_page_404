@@ -3,17 +3,32 @@
 
 sudo apt-get update -y
 sudo apt-get install nginx -y
+sudo mkdir -p /var/www/html
 echo "Holberton School for the win!" | sudo tee /var/www/html/index.html > /dev/null
 echo "Ceci n'est pas une page" | sudo tee /var/www/html/404.html > /dev/null
 
-if ! grep -q "redirect_me" /etc/nginx/sites-available/default
-then
-  sudo sed -i "s|server_name _;|server_name _;\n\n\tlocation /redirect_me {\n\t\treturn 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;\n\t}|" /etc/nginx/sites-available/default
-fi
+sudo tee /etc/nginx/sites-available/default > /dev/null << 'CONF'
+server {
+listen 80 default_server;
+listen [::]:80 default_server;
+root /var/www/html;
+index index.html index.htm;
+server_name _;
 
-if ! grep -q "error_page 404" /etc/nginx/sites-available/default
-then
-  sudo sed -i "s|server_name _;|server_name _;\n\n\terror_page 404 /404.html;|" /etc/nginx/sites-available/default
-fi
+location /redirect_me {
+return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+}
 
+error_page 404 /404.html;
+location = /404.html {
+internal;
+}
+
+location / {
+try_files $uri $uri/ =404;
+}
+}
+CONF
+
+sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 sudo service nginx restart
