@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Starts Apache and makes sure it returns a page containing "Hello Holberton"
+service apache2 start
+grep -q "Hello Holberton" /var/www/html/index.html || echo "Hello Holberton" > /var/www/html/index.html
